@@ -1,12 +1,30 @@
-from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 
 
-def balanceDataSet(df):
+def removeCheatedCom(label_0_set, label_1_set):
+    """
+    去掉曾经舞弊过的公司
+    """
+    cheatedComs = []
+    for index, row in label_1_set.iterrows():
+        cheatedComs.append(row["COMPANY"])
+    cheatedComs = list(set(cheatedComs))
+    label_0_set = label_0_set[label_0_set["COMPANY"] not in cheatedComs]
+    return label_0_set, label_1_set
+
+
+def balanceDataSet(df, blackList=False):
+    """
+    平衡两种数据集的数量
+    """
     label_0_set = df[df["CHEAT"] == 0]
     label_1_set = df[df["CHEAT"] == 1]
+    if blackList:
+        label_0_set, label_1_set = removeCheatedCom(label_0_set, label_1_set)
+
     row_0_num = label_0_set.shape[0]
     row_1_num = label_1_set.shape[0]
     multiple = 1.7  # 数据集0,1比例
@@ -18,7 +36,9 @@ def balanceDataSet(df):
         label_1_set = label_1_set.sample(frac=frac_num).reset_index(drop=True)
     print("label_0_set", label_0_set.shape)
     print("label_1_set", label_1_set.shape)
-    return pd.concat([label_0_set, label_1_set])
+    # 拼接 打乱 去index
+    return pd.concat([label_0_set,
+                      label_1_set]).sample(frac=1).reset_index(drop=True)
 
 
 df1 = pd.read_csv(
@@ -33,7 +53,7 @@ df1 = pd.read_csv(
 print(df1.head())
 print(df1.info())
 
-df1 = balanceDataSet(df1).sample(frac=1).reset_index(drop=True)
+df1 = balanceDataSet(df1)
 
 train_test = int(0.7 * (df1.shape[0]))
 
