@@ -19,7 +19,7 @@ def removeCheatedCom(label_0_set, label_1_set):
     return label_0_set, label_1_set
 
 
-def balanceDataSet(df, multiple=1,blackList=False):
+def balanceDataSet(df, multiple=1, blackList=False):
     """
     平衡两种数据集的数量
     @ multiple 未舞弊:舞弊
@@ -46,25 +46,22 @@ def balanceDataSet(df, multiple=1,blackList=False):
                       label_1_set]).sample(frac=1).reset_index(drop=True)
 
 
-df1 = pd.read_csv(
-    "./data/1.csv",
-    dtype={
-        'COMPANY': str,
-        'YEAR': str,
-        'ID': str,
-        'LOSS': int,
-        'CHEAT': int
-    })
-# print(df1.head())
-# print(df1.info())
-
-
 def res(blackList=False,
         selectedDims=["LOSS", "TATA1", "CHCS", "OTHREC"],
         train_test_ratio=0.7,
         multiple=1,
         n_estimators=4):
-
+    df1 = pd.read_csv(
+        "./data/1.csv",
+        dtype={
+            'COMPANY': str,
+            'YEAR': str,
+            'ID': str,
+            'LOSS': int,
+            'CHEAT': int
+        })
+    # print(df1.head())
+    # print(df1.info())
     df1 = balanceDataSet(df1, multiple=multiple, blackList=blackList)
 
     train_test = int(train_test_ratio * (df1.shape[0]))
@@ -91,9 +88,8 @@ def res(blackList=False,
     label_0_score = clf.score(label_0_x_test, label_0_y_test)
     label_1_score = clf.score(label_1_x_test, label_1_y_test)
     score = clf.score(x_test, y_test)
-    print("未舞弊公司正确预测率：\t", label_0_score)
-    print("舞弊公司正确预测率：\t", label_1_score)
-    print("总体正确预测率：\t", score)
+    return label_0_score, label_1_score, score
+
 
 # result = clf.predict(x_test)
 # plt.figure()
