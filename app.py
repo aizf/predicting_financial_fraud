@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import json
 from analyze import res
 
@@ -16,7 +16,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
 
 @app.route('/')
 def index():
-    return 'Index Page'
+    return render_template('index.html')
 
 
 # res(blackList=False,
