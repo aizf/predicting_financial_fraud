@@ -1,5 +1,4 @@
 from flask import Flask, request
-from flask_cors import CORS
 import json
 from analyze import res
 
@@ -10,7 +9,9 @@ from analyze import res
 # n_estimators  随机森林构成几棵树
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
+
+# from flask_cors import CORS
+# CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
 
 
 @app.route('/')
