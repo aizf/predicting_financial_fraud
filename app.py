@@ -50,3 +50,6 @@ def predicting_financial_fraud():
     # print("未舞弊公司正确预测率：\t", label_0_score)
     # print("舞弊公司正确预测率：\t", label_1_score)
     # print("总体正确预测率：\t", score)
+
+if __name__ == '__main__':
+    app.run()
