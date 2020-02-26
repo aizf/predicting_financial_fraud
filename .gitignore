@@ -2,8 +2,7 @@ data/*.xlsx
 data/*.csv
 !data/1.csv
 
-uwsgi.*
-!uwsgi.ini
+log
 
 nginx.*
 !nginx.conf

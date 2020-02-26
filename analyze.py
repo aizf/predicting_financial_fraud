@@ -39,8 +39,8 @@ def balanceDataSet(df, multiple=1, blackList=False):
     else:
         frac_num = min(multiple * row_0_num, row_1_num) / row_1_num
         label_1_set = label_1_set.sample(frac=frac_num).reset_index(drop=True)
-    print("label_0_set", label_0_set.shape)
-    print("label_1_set", label_1_set.shape)
+    # print("label_0_set", label_0_set.shape)
+    # print("label_1_set", label_1_set.shape)
     # 拼接 打乱 去index
     return pd.concat([label_0_set,
                       label_1_set]).sample(frac=1).reset_index(drop=True)
