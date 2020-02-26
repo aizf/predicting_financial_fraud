@@ -34,22 +34,19 @@ def index():
 def predicting_financial_fraud():
     try:
         data = json.loads(request.get_data().decode("utf-8"))
-        label_0_score, label_1_score, score = res(
+        RF, LR = res(
             blackList=data["blackList"],
             selectedDims=data["selectedDims"],
             train_test_ratio=data["train_test_ratio"],
             multiple=data["multiple"],
             n_estimators=data["n_estimators"])
-        return {
-            "label_0_score": label_0_score,
-            "label_1_score": label_1_score,
-            "score": score
-        }
+        return {"RandomForest": RF, "LogisticRegression": LR}
     except:
         pass
     # print("未舞弊公司正确预测率：\t", label_0_score)
     # print("舞弊公司正确预测率：\t", label_1_score)
     # print("总体正确预测率：\t", score)
+
 
 if __name__ == '__main__':
     app.run()

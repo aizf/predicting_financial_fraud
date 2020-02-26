@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
 
@@ -82,13 +83,23 @@ def res(blackList=False,
     label_1_x_test = label_1_test[selectedDims]
     label_1_y_test = label_1_test["CHEAT"]
 
+    # RandomForest
     clf = RandomForestClassifier(n_estimators=n_estimators)
     clf.fit(x_train, y_train)
+    RF = {}
+    RF["label_0_score"] = clf.score(label_0_x_test, label_0_y_test)
+    RF["label_1_score"] = clf.score(label_1_x_test, label_1_y_test)
+    RF["score"] = clf.score(x_test, y_test)
 
-    label_0_score = clf.score(label_0_x_test, label_0_y_test)
-    label_1_score = clf.score(label_1_x_test, label_1_y_test)
-    score = clf.score(x_test, y_test)
-    return label_0_score, label_1_score, score
+    # LogisticRegression
+    clf1 = LogisticRegression()
+    clf1.fit(x_train, y_train)
+    LR = {}
+    LR["label_0_score"] = clf1.score(label_0_x_test, label_0_y_test)
+    LR["label_1_score"] = clf1.score(label_1_x_test, label_1_y_test)
+    LR["score"] = clf1.score(x_test, y_test)
+
+    return RF, LR
 
 
 # result = clf.predict(x_test)
