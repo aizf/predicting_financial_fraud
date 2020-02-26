@@ -90,6 +90,12 @@ def res(blackList=False,
     RF["label_0_score"] = clf.score(label_0_x_test, label_0_y_test)
     RF["label_1_score"] = clf.score(label_1_x_test, label_1_y_test)
     RF["score"] = clf.score(x_test, y_test)
+    RF["feature_importances_"] = clf.feature_importances_
+    # print("\n", "RandomForest")
+    # print(clf.feature_importances_)
+    # print(clf.oob_score_)
+    # print(clf.get_params())
+    # print("\n")
 
     # LogisticRegression
     clf1 = LogisticRegression()
@@ -98,6 +104,10 @@ def res(blackList=False,
     LR["label_0_score"] = clf1.score(label_0_x_test, label_0_y_test)
     LR["label_1_score"] = clf1.score(label_1_x_test, label_1_y_test)
     LR["score"] = clf1.score(x_test, y_test)
+    LR["coef_"] = clf1.coef_
+    # print("\n", "LogisticRegression")
+    # print(clf1.coef_)
+    # print("\n")
 
     return RF, LR
 
