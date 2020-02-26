@@ -40,9 +40,12 @@ def predicting_financial_fraud():
             train_test_ratio=data["train_test_ratio"],
             multiple=data["multiple"],
             n_estimators=data["n_estimators"])
+        # print("RF", RF)
+        # print("LR", LR)
         return {"RandomForest": RF, "LogisticRegression": LR}
     except:
-        pass
+        print("RF", RF)
+        print("LR", LR)
     # print("未舞弊公司正确预测率：\t", label_0_score)
     # print("舞弊公司正确预测率：\t", label_1_score)
     # print("总体正确预测率：\t", score)
