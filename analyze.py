@@ -4,6 +4,11 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 
+num_label_0_train = 0
+num_label_1_train = 0
+num_label_0_test = 0
+num_label_1_test = 0
+
 
 def removeCheatedCom(label_0_set, label_1_set):
     """
@@ -20,7 +25,7 @@ def removeCheatedCom(label_0_set, label_1_set):
     return label_0_set, label_1_set
 
 
-def balanceDataSet(df, multiple=1, blackList=False):
+def balanceDataSet(df, multiple, blackList):
     """
     平衡两种数据集的数量
     @ multiple 未舞弊:舞弊
@@ -47,11 +52,16 @@ def balanceDataSet(df, multiple=1, blackList=False):
                       label_1_set]).sample(frac=1).reset_index(drop=True)
 
 
-def res(blackList=False,
-        selectedDims=["LOSS", "TATA1", "CHCS", "OTHREC"],
-        train_test_ratio=0.7,
-        multiple=1,
-        n_estimators=4):
+# blackList=False,
+# selectedDims=["LOSS", "TATA1", "CHCS", "OTHREC"],
+# train_ratio=0.7,
+# multiple=1,
+# n_estimators=4
+def res(blackList, selectedDims, train_ratio, multiple, n_estimators, LR_type,
+        **kwargs):
+
+    global num_label_0_train, num_label_1_train, num_label_0_test, num_label_1_test
+
     df1 = pd.read_csv(
         "./data/1.csv",
         dtype={
@@ -65,15 +75,19 @@ def res(blackList=False,
     # print(df1.info())
     df1 = balanceDataSet(df1, multiple=multiple, blackList=blackList)
 
-    train_test = int(train_test_ratio * (df1.shape[0]))
+    train_test = int(train_ratio * (df1.shape[0]))
 
     train = df1.loc[:train_test - 1]
     x_train = train[selectedDims]
     y_train = train["CHEAT"]
+    num_label_0_train = train[train["CHEAT"] == 0].shape[0]
+    num_label_1_train = train[train["CHEAT"] == 1].shape[0]
 
     test = df1.loc[train_test:]
     x_test = test[selectedDims]
     y_test = test["CHEAT"]
+    num_label_0_test = test[test["CHEAT"] == 0].shape[0]
+    num_label_1_test = test[test["CHEAT"] == 1].shape[0]
 
     label_0_test = test[test["CHEAT"] == 0]
     label_0_x_test = label_0_test[selectedDims]
@@ -84,13 +98,18 @@ def res(blackList=False,
     label_1_y_test = label_1_test["CHEAT"]
 
     # RandomForest
-    clf = RandomForestClassifier(n_estimators=n_estimators)
-    clf.fit(x_train, y_train)
     RF = {}
-    RF["label_0_score"] = clf.score(label_0_x_test, label_0_y_test)
-    RF["label_1_score"] = clf.score(label_1_x_test, label_1_y_test)
-    RF["score"] = clf.score(x_test, y_test)
-    RF["feature_importances"] = clf.feature_importances_.tolist()
+    try:
+        clf = RandomForestClassifier(n_estimators=n_estimators)
+        clf.fit(x_train, y_train)
+        RF["label_0_score"] = clf.score(label_0_x_test, label_0_y_test)
+        RF["label_1_score"] = clf.score(label_1_x_test, label_1_y_test)
+        RF["score"] = clf.score(x_test, y_test)
+        RF["feature_importances"] = clf.feature_importances_.tolist()
+    except Exception as e:
+        print("LogisticRegression")
+        print(str(e))
+        print(repr(e))
     # print("\n", "RandomForest")
     # print(clf.feature_importances_)
     # print(clf.oob_score_)
@@ -98,14 +117,29 @@ def res(blackList=False,
     # print("\n")
 
     # LogisticRegression
-    clf1 = LogisticRegression()
-    clf1.fit(x_train, y_train)
     LR = {}
-    LR["label_0_score"] = clf1.score(label_0_x_test, label_0_y_test)
-    LR["label_1_score"] = clf1.score(label_1_x_test, label_1_y_test)
-    LR["score"] = clf1.score(x_test, y_test)
-    LR["coef"] = clf1.coef_.tolist()
-    LR["intercept"] = clf1.intercept_.tolist()
+    try:
+        clf1 = LogisticRegression()
+        clf1.fit(x_train, y_train)
+        if LR_type == "2":
+            coefficient = kwargs["data"]["coefficient"]
+            intercept = kwargs["data"]["intercept"]
+            # print(clf1.coef_)
+            # print(clf1.intercept_)
+            clf1.coef_ = np.array([coefficient])
+            clf1.intercept_ = np.array([intercept])
+            # print(clf1.coef_)
+            # print(clf1.intercept_)
+        LR["label_0_score"] = clf1.score(label_0_x_test, label_0_y_test)
+        LR["label_1_score"] = clf1.score(label_1_x_test, label_1_y_test)
+        LR["score"] = clf1.score(x_test, y_test)
+        LR["coef"] = clf1.coef_.tolist()
+        LR["intercept"] = clf1.intercept_.tolist()
+    except Exception as e:
+        print("LogisticRegression")
+        print(str(e))
+        print(repr(e))
+
     # print("\n", "LogisticRegression")
     # print(clf1.coef_)
     # print("\n")

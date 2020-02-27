@@ -4,7 +4,7 @@ from analyze import res
 
 # blackList True or False   是否去掉曾经舞弊过的公司
 # selectedDims  特征选择的维度
-# train_test_ratio  训练集，测试集划分比例
+# train_ratio  训练集，测试集划分比例
 # multiple  未舞弊:舞弊
 # n_estimators  随机森林构成几棵树
 
@@ -16,6 +16,10 @@ CORS(
     app, resources={r"/predicting_financial_fraud/*": {
         "origins": "*"
     }})  # 只允许此接口所有域名跨域
+CORS(
+    app, resources={r"/search_information/*": {
+        "origins": "*"
+    }})  # 只允许此接口所有域名跨域
 
 
 @app.route('/')
@@ -25,7 +29,7 @@ def index():
 
 # res(blackList=False,
 #     selectedDims=["LOSS", "TATA1", "CHCS", "OTHREC"],
-#     train_test_ratio=0.7,
+#     train_ratio=0.7,
 #     multiple=1,
 #     n_estimators=4)
 
@@ -34,21 +38,51 @@ def index():
 def predicting_financial_fraud():
     try:
         data = json.loads(request.get_data().decode("utf-8"))
+        if len(data["selectedDims"]) == 0:
+            return "No Selected Dims !", 400
         RF, LR = res(
             blackList=data["blackList"],
             selectedDims=data["selectedDims"],
-            train_test_ratio=data["train_test_ratio"],
+            train_ratio=data["train_ratio"],
             multiple=data["multiple"],
-            n_estimators=data["n_estimators"])
+            n_estimators=data["n_estimators"],
+            LR_type=data["LR_type"],
+            data=data)
         # print("RF", RF)
         # print("LR", LR)
         return {"RandomForest": RF, "LogisticRegression": LR}
     except:
-        print("RF", RF)
-        print("LR", LR)
+        pass
+        # print("RF", RF)
+        # print("LR", LR)
     # print("未舞弊公司正确预测率：\t", label_0_score)
     # print("舞弊公司正确预测率：\t", label_1_score)
     # print("总体正确预测率：\t", score)
+
+
+@app.route('/search_information', methods=['POST'])
+def search_information():
+    try:
+        from analyze import num_label_0_train, num_label_1_train, num_label_0_test, num_label_1_test
+
+        data = json.loads(request.get_data().decode("utf-8"))
+        if len(data["keys"]) == 0:
+            return "", 400
+        # print({
+        #     "label_0_train": num_label_0_train,
+        #     "label_1_train": num_label_1_train,
+        #     "label_0_test": num_label_0_test,
+        #     "label_1_test": num_label_1_test
+        # })
+        return {
+            "label_0_train": num_label_0_train,
+            "label_1_train": num_label_1_train,
+            "label_0_test": num_label_0_test,
+            "label_1_test": num_label_1_test
+        }
+
+    except:
+        pass
 
 
 if __name__ == '__main__':
