@@ -1,5 +1,6 @@
 # source venv/bin/activate
 # gunicorn -c gunicorn_conf.py app:app
+# kill -9 $(cat log/gunicorn.pid)
 # pstree -ap|grep gunicorn
 # kill -9 pid
 import multiprocessing
