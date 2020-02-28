@@ -12,7 +12,7 @@ with open(filePath, "r") as f:
 #     <script src=/assets/js/chunk-vendors.0195ce98.js></script>
 #     <script src=/assets/js/app.0a10128a.js></script>"""
 
-pattern = re.compile(r'(href=|src=)(/)(assets/.*?\.(?:js|css))')
+pattern = re.compile(r'(href=|src=)(/)(assets/.*?\.(?:js|css|ico))')
 
 # print(pattern.findall(content))
 

@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 import json
-from analyze import res
+from analyze import Performer
 
 # blackList True or False   是否去掉曾经舞弊过的公司
 # selectedDims  特征选择的维度
@@ -9,6 +9,8 @@ from analyze import res
 # n_estimators  随机森林构成几棵树
 
 app = Flask(__name__)
+
+performer = Performer()
 
 from flask_cors import CORS
 # CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
@@ -40,7 +42,7 @@ def predicting_financial_fraud():
         data = json.loads(request.get_data().decode("utf-8"))
         if len(data["selectedDims"]) == 0:
             return "No Selected Dims !", 400
-        RF, LR = res(
+        RF, LR = performer.res(
             blackList=data["blackList"],
             selectedDims=data["selectedDims"],
             train_ratio=data["train_ratio"],
@@ -63,8 +65,6 @@ def predicting_financial_fraud():
 @app.route('/search_information', methods=['POST'])
 def search_information():
     try:
-        from analyze import num_label_0_train, num_label_1_train, num_label_0_test, num_label_1_test
-
         data = json.loads(request.get_data().decode("utf-8"))
         if len(data["keys"]) == 0:
             return "", 400
@@ -75,12 +75,11 @@ def search_information():
         #     "label_1_test": num_label_1_test
         # })
         return {
-            "label_0_train": num_label_0_train,
-            "label_1_train": num_label_1_train,
-            "label_0_test": num_label_0_test,
-            "label_1_test": num_label_1_test
+            "label_0_train": performer.num_label_0_train,
+            "label_1_train": performer.num_label_1_train,
+            "label_0_test": performer.num_label_0_test,
+            "label_1_test": performer.num_label_1_test
         }
-
     except:
         pass
 
