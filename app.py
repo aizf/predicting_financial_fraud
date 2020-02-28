@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 import json
-from analyze import Performer
+from analyze import performer
 
 # blackList True or False   是否去掉曾经舞弊过的公司
 # selectedDims  特征选择的维度
@@ -9,8 +9,6 @@ from analyze import Performer
 # n_estimators  随机森林构成几棵树
 
 app = Flask(__name__)
-
-performer = Performer()
 
 from flask_cors import CORS
 # CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域

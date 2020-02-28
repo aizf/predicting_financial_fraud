@@ -154,6 +154,8 @@ class Performer:
             n_estimators), self.calcLogisticRegression(LR_type, kwargs)
 
 
+performer = Performer()
+
 # result = clf.predict(x_test)
 # plt.figure()
 # plt.plot(np.arange(len(result)), y_test, 'go-', label='true value')
