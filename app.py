@@ -64,20 +64,17 @@ def predicting_financial_fraud():
 def search_information():
     try:
         data = json.loads(request.get_data().decode("utf-8"))
-        if len(data["keys"]) == 0:
+        if "info" not in data:
             return "", 400
-        # print({
-        #     "label_0_train": num_label_0_train,
-        #     "label_1_train": num_label_1_train,
-        #     "label_0_test": num_label_0_test,
-        #     "label_1_test": num_label_1_test
-        # })
-        return {
-            "label_0_train": performer.num_label_0_train,
-            "label_1_train": performer.num_label_1_train,
-            "label_0_test": performer.num_label_0_test,
-            "label_1_test": performer.num_label_1_test
-        }
+        if data["info"] == "dataset":
+            return {
+                "label_0_train": performer.num_label_0_train,
+                "label_1_train": performer.num_label_1_train,
+                "label_0_test": performer.num_label_0_test,
+                "label_1_test": performer.num_label_1_test
+            }
+        elif data["info"] == "dims":
+            return {"dims": performer.dims}
     except:
         pass
 

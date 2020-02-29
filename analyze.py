@@ -12,7 +12,7 @@ class Performer:
     num_label_1_test = 0
 
     def __init__(self):
-        self.df = pd.read_csv(
+        self.__df = pd.read_csv(
             "./data/1.csv",
             dtype={
                 'COMPANY': str,
@@ -21,8 +21,9 @@ class Performer:
                 'LOSS': int,
                 'CHEAT': int
             })
-        print(0, self.df[self.df["CHEAT"] == 0].shape)
-        print(1, self.df[self.df["CHEAT"] == 1].shape)
+        self.dims = list(self.__df.columns)
+        print(0, self.__df[self.__df["CHEAT"] == 0].shape)
+        print(1, self.__df[self.__df["CHEAT"] == 1].shape)
 
     @staticmethod
     def removeCheatedCom(label_0_set, label_1_set):
@@ -70,6 +71,8 @@ class Performer:
                           label_1_set]).sample(frac=1).reset_index(drop=True)
 
     def handleData(self, blackList, selectedDims, train_ratio, multiple):
+        self.df = self.__df.copy()[selectedDims +
+                                   ["CHEAT"]].dropna().reset_index(drop=True)
         df = self.balanceDataset(multiple=multiple, blackList=blackList)
 
         train_test = int(train_ratio * (df.shape[0]))
@@ -77,20 +80,28 @@ class Performer:
         train = df.loc[:train_test - 1]
         self.x_train = train[selectedDims]
         self.y_train = train["CHEAT"]
-        self.num_label_0_train = train[train["CHEAT"] == 0].shape[0]
-        self.num_label_1_train = train[train["CHEAT"] == 1].shape[0]
+
+        label_0_train = train[train["CHEAT"] == 0]
+        self.num_label_0_train = label_0_train.shape[0]
+        self.label_0_x_train = label_0_train[selectedDims]
+        self.label_0_y_train = label_0_train["CHEAT"]
+
+        label_1_train = train[train["CHEAT"] == 1]
+        self.num_label_1_train = label_1_train.shape[1]
+        self.label_1_x_train = label_1_train[selectedDims]
+        self.label_1_y_train = label_1_train["CHEAT"]
 
         test = df.loc[train_test:]
         self.x_test = test[selectedDims]
         self.y_test = test["CHEAT"]
-        self.num_label_0_test = test[test["CHEAT"] == 0].shape[0]
-        self.num_label_1_test = test[test["CHEAT"] == 1].shape[0]
 
         label_0_test = test[test["CHEAT"] == 0]
+        self.num_label_0_test = label_0_test.shape[0]
         self.label_0_x_test = label_0_test[selectedDims]
         self.label_0_y_test = label_0_test["CHEAT"]
 
         label_1_test = test[test["CHEAT"] == 1]
+        self.num_label_1_test = label_1_test.shape[0]
         self.label_1_x_test = label_1_test[selectedDims]
         self.label_1_y_test = label_1_test["CHEAT"]
 
@@ -99,11 +110,19 @@ class Performer:
         try:
             clf = RandomForestClassifier(n_estimators=n_estimators)
             clf.fit(self.x_train, self.y_train)
-            RF["label_0_score"] = clf.score(self.label_0_x_test,
-                                            self.label_0_y_test)
-            RF["label_1_score"] = clf.score(self.label_1_x_test,
-                                            self.label_1_y_test)
-            RF["score"] = clf.score(self.x_test, self.y_test)
+
+            RF["label_0_score_test"] = clf.score(self.label_0_x_test,
+                                                 self.label_0_y_test)
+            RF["label_1_score_test"] = clf.score(self.label_1_x_test,
+                                                 self.label_1_y_test)
+            RF["score_test"] = clf.score(self.x_test, self.y_test)
+
+            RF["label_0_score_train"] = clf.score(self.label_0_x_train,
+                                                  self.label_0_y_train)
+            RF["label_1_score_train"] = clf.score(self.label_1_x_train,
+                                                  self.label_1_y_train)
+            RF["score_train"] = clf.score(self.x_train, self.y_train)
+
             RF["feature_importances"] = clf.feature_importances_.tolist()
         except Exception as e:
             print("LogisticRegression")
@@ -126,11 +145,16 @@ class Performer:
                 clf.intercept_ = np.array([intercept])
                 # print(clf.coef_)
                 # print(clf.intercept_)
-            LR["label_0_score"] = clf.score(self.label_0_x_test,
-                                            self.label_0_y_test)
-            LR["label_1_score"] = clf.score(self.label_1_x_test,
-                                            self.label_1_y_test)
-            LR["score"] = clf.score(self.x_test, self.y_test)
+            LR["label_0_score_test"] = clf.score(self.label_0_x_test,
+                                                 self.label_0_y_test)
+            LR["label_1_score_test"] = clf.score(self.label_1_x_test,
+                                                 self.label_1_y_test)
+            LR["score_test"] = clf.score(self.x_test, self.y_test)
+            LR["label_0_score_train"] = clf.score(self.label_0_x_train,
+                                                  self.label_0_y_train)
+            LR["label_1_score_train"] = clf.score(self.label_1_x_train,
+                                                  self.label_1_y_train)
+            LR["score_train"] = clf.score(self.x_train, self.y_train)
             LR["coef"] = clf.coef_.tolist()
             LR["intercept"] = clf.intercept_.tolist()
         except Exception as e:
