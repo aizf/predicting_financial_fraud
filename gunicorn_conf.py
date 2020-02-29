@@ -1,6 +1,11 @@
 # source venv/bin/activate
+# 重启
+# kill -HUP  $(cat log/gunicorn.pid)
+# 启动
 # gunicorn -c gunicorn_conf.py app:app
+# 停止
 # kill -9 $(cat log/gunicorn.pid)
+
 # pstree -ap|grep gunicorn
 # kill -9 pid
 import multiprocessing

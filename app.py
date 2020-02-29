@@ -51,10 +51,12 @@ def predicting_financial_fraud():
         # print("RF", RF)
         # print("LR", LR)
         return {"RandomForest": RF, "LogisticRegression": LR}
-    except:
-        pass
-        # print("RF", RF)
-        # print("LR", LR)
+    except Exception as e:
+        print("predicting_financial_fraud")
+        print(str(e))
+        print(repr(e))
+    # print("RF", RF)
+    # print("LR", LR)
     # print("未舞弊公司正确预测率：\t", label_0_score)
     # print("舞弊公司正确预测率：\t", label_1_score)
     # print("总体正确预测率：\t", score)

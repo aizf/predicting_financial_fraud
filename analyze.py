@@ -21,7 +21,14 @@ class Performer:
                 'LOSS': int,
                 'CHEAT': int
             })
-        self.dims = list(self.__df.columns)
+        self.__otherDims = ["COMPANY", "DATE", "YEAR", "ID", "CHEAT"]
+        self.dims = [
+            dim for dim in self.__df.columns if dim not in self.__otherDims
+        ]
+        list(
+            set(self.__df.columns).difference(set(self.__otherDims))
+            )
+        self.headerDims = ["COMPANY", "CHEAT"]
         print(0, self.__df[self.__df["CHEAT"] == 0].shape)
         print(1, self.__df[self.__df["CHEAT"] == 1].shape)
 
@@ -40,19 +47,12 @@ class Performer:
             label_0_set = label_0_set[label_0_set["COMPANY"] != com]
         return label_0_set, label_1_set
 
-    def balanceDataset(self, multiple, blackList):
+    @staticmethod
+    def balanceDataset(label_0_set, label_1_set, multiple):
         """
         平衡两种数据集的数量
         @ multiple 未舞弊:舞弊
-        @ blackList
         """
-        df = self.df
-        label_0_set = df[df["CHEAT"] == 0]
-        label_1_set = df[df["CHEAT"] == 1]
-        if blackList:
-            label_0_set, label_1_set = self.removeCheatedCom(
-                label_0_set, label_1_set)
-
         row_0_num = label_0_set.shape[0]
         row_1_num = label_1_set.shape[0]
 
@@ -65,45 +65,61 @@ class Performer:
             label_1_set = label_1_set.sample(frac=frac_num).reset_index(
                 drop=True)
         # print("label_0_set", label_0_set.shape)
-        # print("label_1_set", label_1_set.shape)
+        # print("label_1_set", label_1_set)
         # 拼接 打乱 去index
-        return pd.concat([label_0_set,
-                          label_1_set]).sample(frac=1).reset_index(drop=True)
+        return label_0_set, label_1_set
 
     def handleData(self, blackList, selectedDims, train_ratio, multiple):
+        # copy
         self.df = self.__df.copy()[selectedDims +
-                                   ["CHEAT"]].dropna().reset_index(drop=True)
-        df = self.balanceDataset(multiple=multiple, blackList=blackList)
+                                   self.headerDims].dropna().reset_index(
+                                       drop=True)
+        label_0_set = self.df[self.df["CHEAT"] == 0]
+        label_1_set = self.df[self.df["CHEAT"] == 1]
+        if blackList:
+            label_0_set, label_1_set = self.removeCheatedCom(
+                label_0_set, label_1_set)
 
-        train_test = int(train_ratio * (df.shape[0]))
+        label_0_set, label_1_set = self.balanceDataset(
+            label_0_set, label_1_set, multiple=multiple)
+        # print("label_0_set")
+        # print(label_0_set)
+        # print("label_1_set")
+        # print(label_1_set)
 
-        train = df.loc[:train_test - 1]
-        self.x_train = train[selectedDims]
-        self.y_train = train["CHEAT"]
+        train_get_num_0 = int(train_ratio * (label_0_set.shape[0]))
+        train_get_num_1 = int(train_ratio * (label_1_set.shape[0]))
 
-        label_0_train = train[train["CHEAT"] == 0]
+        label_0_train = label_0_set.iloc[:train_get_num_0]
         self.num_label_0_train = label_0_train.shape[0]
         self.label_0_x_train = label_0_train[selectedDims]
         self.label_0_y_train = label_0_train["CHEAT"]
 
-        label_1_train = train[train["CHEAT"] == 1]
-        self.num_label_1_train = label_1_train.shape[1]
+        label_1_train = label_1_set.iloc[:train_get_num_1]
+        self.num_label_1_train = label_1_train.shape[0]
         self.label_1_x_train = label_1_train[selectedDims]
         self.label_1_y_train = label_1_train["CHEAT"]
 
-        test = df.loc[train_test:]
-        self.x_test = test[selectedDims]
-        self.y_test = test["CHEAT"]
+        train = pd.concat(
+            [label_0_train,
+             label_1_train]).sample(frac=1).reset_index(drop=True)
+        self.x_train = train[selectedDims]
+        self.y_train = train["CHEAT"]
 
-        label_0_test = test[test["CHEAT"] == 0]
+        label_0_test = label_0_set.iloc[train_get_num_0:]
         self.num_label_0_test = label_0_test.shape[0]
         self.label_0_x_test = label_0_test[selectedDims]
         self.label_0_y_test = label_0_test["CHEAT"]
 
-        label_1_test = test[test["CHEAT"] == 1]
+        label_1_test = label_1_set.iloc[train_get_num_1:]
         self.num_label_1_test = label_1_test.shape[0]
         self.label_1_x_test = label_1_test[selectedDims]
         self.label_1_y_test = label_1_test["CHEAT"]
+
+        test = pd.concat([label_0_test,
+                          label_1_test]).sample(frac=1).reset_index(drop=True)
+        self.x_test = test[selectedDims]
+        self.y_test = test["CHEAT"]
 
     def calcRandomForest(self, n_estimators):
         RF = {}
