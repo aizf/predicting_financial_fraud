@@ -25,12 +25,12 @@ class Performer:
         self.dims = [
             dim for dim in self.__df.columns if dim not in self.__otherDims
         ]
-        list(
-            set(self.__df.columns).difference(set(self.__otherDims))
-            )
+        list(set(self.__df.columns).difference(set(self.__otherDims)))
         self.headerDims = ["COMPANY", "CHEAT"]
         print(0, self.__df[self.__df["CHEAT"] == 0].shape)
         print(1, self.__df[self.__df["CHEAT"] == 1].shape)
+
+        self.selectedDims = []
 
     @staticmethod
     def removeCheatedCom(label_0_set, label_1_set):
@@ -69,7 +69,8 @@ class Performer:
         # 拼接 打乱 去index
         return label_0_set, label_1_set
 
-    def handleData(self, blackList, selectedDims, train_ratio, multiple):
+    def handleData(self, blackList, train_ratio, multiple):
+        selectedDims = self.selectedDims
         # copy
         self.df = self.__df.copy()[selectedDims +
                                    self.headerDims].dropna().reset_index(
@@ -90,6 +91,7 @@ class Performer:
         train_get_num_0 = int(train_ratio * (label_0_set.shape[0]))
         train_get_num_1 = int(train_ratio * (label_1_set.shape[0]))
 
+        # train
         label_0_train = label_0_set.iloc[:train_get_num_0]
         self.num_label_0_train = label_0_train.shape[0]
         self.label_0_x_train = label_0_train[selectedDims]
@@ -106,6 +108,7 @@ class Performer:
         self.x_train = train[selectedDims]
         self.y_train = train["CHEAT"]
 
+        # test
         label_0_test = label_0_set.iloc[train_get_num_0:]
         self.num_label_0_test = label_0_test.shape[0]
         self.label_0_x_test = label_0_test[selectedDims]
@@ -139,7 +142,10 @@ class Performer:
                                                   self.label_1_y_train)
             RF["score_train"] = clf.score(self.x_train, self.y_train)
 
-            RF["feature_importances"] = clf.feature_importances_.tolist()
+            RF["feature_importances"] ={}
+            for (dim, imp) in zip(self.selectedDims, clf.feature_importances_.tolist()):
+                RF["feature_importances"][dim]=imp
+            # print(RF["feature_importances"])
         except Exception as e:
             print("LogisticRegression")
             print(str(e))
@@ -187,8 +193,9 @@ class Performer:
     # n_estimators=4
     def res(self, blackList, selectedDims, train_ratio, multiple, n_estimators,
             LR_type, **kwargs):
+        self.selectedDims = selectedDims
 
-        self.handleData(blackList, selectedDims, train_ratio, multiple)
+        self.handleData(blackList, train_ratio, multiple)
 
         return self.calcRandomForest(
             n_estimators), self.calcLogisticRegression(LR_type, kwargs)
