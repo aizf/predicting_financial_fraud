@@ -1,5 +1,4 @@
-data/*.xlsx
-data/*.csv
+data/*
 !data/1.csv
 
 log
