@@ -11,19 +11,20 @@ from analyze import performer
 app = Flask(__name__)
 
 from flask_cors import CORS
-# CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
-CORS(
-    app, resources={r"/predicting_financial_fraud/*": {
-        "origins": "*"
-    }})  # 只允许此接口所有域名跨域
-CORS(
-    app, resources={r"/search_information/*": {
-        "origins": "*"
-    }})  # 只允许此接口所有域名跨域
+CORS(app, resources={r"/*": {"origins": "*"}})  # 允许所有域名跨域
+# CORS(
+#     app, resources={r"/predicting_financial_fraud/*": {
+#         "origins": "*"
+#     }})  # 只允许此接口所有域名跨域
+# CORS(
+#     app, resources={r"/searpipch_information/*": {
+#         "origins": "*"
+#     }})  # 只允许此接口所有域名跨域
 
 
 @app.route('/')
 def index():
+    # return "",403
     return render_template('index.html')
 
 
@@ -83,3 +84,4 @@ def search_information():
 
 if __name__ == '__main__':
     app.run()
+    # app.run("0.0.0.0","5000")

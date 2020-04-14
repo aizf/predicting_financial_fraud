@@ -9,7 +9,7 @@
 # pstree -ap|grep gunicorn
 # kill -9 pid
 import multiprocessing
-# bind = '127.0.0.1:5000'
+# bind = '127.0.0.1:5001'
 bind = '0.0.0.0:5000'
 chdir = '/home/ubuntu/GitHub/predicting_financial_fraud'
 workers = multiprocessing.cpu_count() * 2 + 1    #进程数
